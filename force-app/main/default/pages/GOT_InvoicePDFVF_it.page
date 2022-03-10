@@ -1,0 +1,200 @@
+<apex:page renderAs="pdf" standardController="GOT_Invoice__c" extensions="GOT_InvoicePDFVFController" applyBodyTag="false">
+    <head>
+        <style>
+            body 
+            {
+                font-family: "sans-serif";
+                font-size: 11px;
+            }
+            <!--header-->
+            .header
+            {
+                text-align: center;
+                
+            }
+            .header .brand-logo{
+                width: 150px;
+            }
+            <!--content-->
+            
+            <!--introduction-->
+            .content .compensi{
+                margin-top: 5px;
+            }
+            .content .introduction .dir1 p, .dir2 p, .postal p, .compensi p, .unicredit p{
+                margin:3px 0px 3px 0px;
+            }
+            .content .introduction .city{
+                margin-left:470px;
+            }
+            .content .introduction .preaviso{
+                margin-left:110px;
+            }
+            .content .introduction .ogetto p{
+                display: inline;
+            }
+            .content .introduction .outputLabel{
+                margin: 0px;
+            }
+            
+            .text .iban_text{
+                text-align: justify;
+                margin-top: 90px;
+            }
+            .text .dpr_text{
+                margin-top: 25px;
+                text-align: center;
+                border: 1px solid black;
+                padding: 4px;
+            }
+            .text .dpr_text p{
+                margin: 0px;
+            }
+            <!--footer-->
+            .footer{
+                text-align: center;
+                margin: 75px 0px 0px 0px;
+            }
+            .footer p{
+                margin: 3px;
+            }
+        </style>
+    </head>
+    <body>
+        <!--header-->
+        <div class="header">
+            <apex:image id="theImage" value="/sfc/servlet.shepherd/version/download/{!contentversion.Id}" width="150"/>
+        </div>
+        
+        <!--content-->
+        <div class="content">
+            <div class="introduction">
+                <div class="spet">
+                    <p> Spett.li</p>
+                </div>
+                <div class="dir1">
+                    <p><apex:outputLabel value="{!UPPER(GOT_Invoice__c.GOT_InvoiceToRef__r.Name)}"/>,</p>
+                </div>
+                <div class="p_iva">
+                    <p>P. IVA: <apex:outputLabel value="{!GOT_Invoice__c.GOT_InvoiceToRef__r.GOT_DocNumber__c}"/></p>
+                </div>
+                <div class="dir1">
+                    <p><apex:outputLabel value="{!UPPER(GOT_Invoice__c.GOT_DepartmentAuto__c)}"/></p>
+                </div>
+                <div class="dir2">
+                    <p><apex:outputLabel value="{!GOT_Invoice__c.GOT_PointAddressRef__r.Street}"/>,</p>
+                </div>
+                <div class="postal">
+                    <p><apex:outputLabel value="{!GOT_Invoice__c.GOT_PointAddressRef__r.PostalCode}"/></p>
+                    <p><apex:outputLabel value="{!GOT_Invoice__c.GOT_PointAddressRef__r.City}"/> - <apex:outputLabel value="{!GOT_Invoice__c.GOT_PointAddressRef__r.Country}"/> </p>
+                </div>
+                
+                <div class="city"><p>Roma,
+                    <apex:outputText value="{0, date, dd/MM/yyyy}">
+                        <apex:param value="{!GOT_Invoice__c.GOT_NoticeDate__c}" />
+                    </apex:outputText></p></div>
+                <div class="ogetto"><p><b>Oggetto:</b></p>
+                    <p class="preaviso"><i><u>  Preavviso di parcella n. <apex:outputLabel value="{!GOT_Invoice__c.GOT_NoticeSeqNum__c}"/> / 
+                        <apex:outputText value="{0, date, yyyy}">
+                            <apex:param value="{!GOT_Invoice__c.GOT_NoticeDate__c}" />
+                        </apex:outputText></u></i></p>
+                </div>
+                <div class="compensi"><p><apex:outputLabel value="{!GOT_Invoice__c.GOT_InvoiceConcept__c}"/></p></div>
+            </div>
+            <div class="main" style="margin-top: 20px">
+                <table border="0" style="width: 100%;">
+                    <!-- Definición de ancho de columnas -->
+                    <tr>
+                        <th style="width: 70%"></th>
+                        <th style="width: 15%"></th>
+                        <th style="width: 15%"></th>
+                    </tr>
+                    <!--Fila titulos-->
+                    <tr>
+                        <td align="center"><b>CAUSALE</b></td>
+                        <td colspan="2" align="center"><b>IMPORTI</b> (<apex:outputLabel value="{!GOT_Invoice__c.CurrencyIsoCode}"/>)</td>
+                    </tr>
+                    <!--Fila IVA / No IVA -->
+                    <tr>
+                        <td></td>
+                        <td align="right">  Non sogetti IVA</td>
+                        <td align="right">  Soggetti IVA</td>
+                    </tr>
+                    <tr><td colspan="4">&nbsp;</td></tr>
+                    <!-- Fila Honorarios-->                    
+                    <tr>
+                        <td>    Onorari</td>
+                        <td align="right"><apex:outputText value="{!onorari_label}"/> <apex:outputLabel value="{!GOT_Invoice__c.CurrencyIsoCode}"/></td>                        
+                        <td></td>
+                    </tr>
+                    <!-- Fila 15% -->
+                    <tr>
+                        <td>Spese generali 15%</td>
+                        <td align="right"><apex:outputLabel value="{!onorariMinusGeneral_label}"/> <apex:outputLabel value="{!GOT_Invoice__c.CurrencyIsoCode}"/></td>                        
+                        <td></td>
+                    </tr>
+                    <!-- Fila Gastos -->
+                    <tr>
+                        <td>Spese sostenute</td>
+                        <td align="right"><apex:outputLabel value="{!expense_label}"/> <apex:outputLabel value="{!GOT_Invoice__c.CurrencyIsoCode}"/></td>                        
+                        <td></td>
+                    </tr>
+                    <!-- Fila Total imponible -->
+                    <tr>
+                        <td align="right"><b>TOTALE IMPONIBILE</b></td>
+                        <td align="right" style="border-top: 2px solid black;"><b><apex:outputLabel value="{!totaleImponibile_label}"/> <apex:outputLabel value="{!GOT_Invoice__c.CurrencyIsoCode}"/></b></td>
+                        <td></td>
+                    </tr>
+                    <tr><td colspan="4">&nbsp;</td></tr>
+                    <!-- Fila 4% -->
+                    <tr>
+                        <td>4% Contributo Cassa di Previdenza e Assistenza</td>
+                        <td align="right"><apex:outputLabel value="{!totaleImponibile4Percent_label}"/> <apex:outputLabel value="{!GOT_Invoice__c.CurrencyIsoCode}"/></td>
+                        <td></td>
+                    </tr>
+                     <!-- Fila Total imponible IVA -->
+                     <tr>
+                        <td align="right"><b>TOTALE IMPONIBILE IVA</b></td>
+                        <td align="right"  style="border-top: 2px solid black;"><b><apex:outputLabel value="{!totaleImponibileIVA_label}"/> <apex:outputLabel value="{!GOT_Invoice__c.CurrencyIsoCode}"/></b></td>
+                        <td></td>
+                    </tr>
+                    <tr><td colspan="4">&nbsp;</td></tr>
+                    <!-- Fila IVA 22% -->
+                    <tr>
+                        <td>IVA (22 %)</td>
+                        <td align="right"><apex:outputLabel value="{!iva_label}"/> <apex:outputLabel value="{!GOT_Invoice__c.CurrencyIsoCode}"/></td>
+                        <td></td>
+                    </tr>
+                    <!-- Fila Anticipado -->
+                    <tr>
+                        <td>Spese anticipate</td>
+                        <td></td>
+                        <td align="right"><apex:outputLabel value="{!supply_label}"/> <apex:outputLabel value="{!GOT_Invoice__c.CurrencyIsoCode}"/></td>                       
+                    </tr>
+                     <!-- Total a pagar -->
+                     <tr>
+                        <td align="right"><b>NETTO A PAGARE</b></td>
+                        <td align="right"  style="border-top: 2px solid black;"><b><apex:outputLabel value="{!netoAPagare_label}"/> <apex:outputLabel value="{!GOT_Invoice__c.CurrencyIsoCode}"/></b></td>
+                        <td></td>
+                    </tr>
+                </table>
+                
+            </div>
+            <div class="text">
+                <div class="iban_text">
+                    <p>La corresponsione dell'indicato importo di <b><apex:outputLabel value="{!GOT_Invoice__c.CurrencyIsoCode}"/> <apex:outputLabel value="{!netoAPagare_label}"/></b> sarà effettuata a mezzo bonifico bancario sul c.c. intestato a Ontier Italia Srl STA presso Fideuram SPA (Corso di Porta Romana 16, 20122 Milano).<b>IBAN IT87 F032 9601 6010 0006 4408727</b>.</p>
+                </div>
+                <div class="dpr_text">
+                    <p> Il presente documento non è valido ai fini del DPR 633/72 e successive modifiche. La fattura sarà emessa dopo il pagamento del corrispettivo ai sensi dell'art. 21 del summenzionato DPR. }</p>
+                </div>
+            </div>
+        </div>
+        <!--footer-->
+        <div class="footer">
+            <p>ONTIER ITALIA S.R.L. STA Piazza Cavour, 19 - 00193, Roma</p>
+            <p>Tel.: +39 0683975380 - Fax: +39 0683975383</p>
+            <p>Ufficio del Registro delle Imprese di Roma - C.F. e P.IVA: 15245391006 - Capitale sociale 10.000,00 euro (i.v.)</p>
+            <p>www.ontier.net</p>
+        </div>
+    </body>
+</apex:page>

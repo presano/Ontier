@@ -1,0 +1,484 @@
+<apex:page renderAs="pdf" standardController="GOT_ExpenseSheet__c" extensions="GOT_ExpenseSheetPDFController" applyBodyTag="false">
+    <head>
+        <style>
+            /*
+                Color gris Ontier: rgb(103,102,102)
+                Color verde Ontier: rgb(0,151,169)
+            */
+            @page
+            {
+                size: A4 landscape;
+                margin: 10mm;
+                @top-center 
+                {
+                    content: element(header);
+                }
+                @bottom-left 
+                {
+                    content: element(footer);
+                }
+            }            
+            body 
+            {
+                font-family: "sans-serif";
+                font-size: 10pt;
+            }
+            /*Header table classes*/
+            .sheet-table
+            {
+                width: 100%;
+            }
+            .sheet-table th
+            {
+                background-color: rgb(0,151,169);
+                color: white;
+                font-family: "sans-serif";
+                font-weight: bold;
+                text-align: center;
+            }
+            .sheet-table td
+            {
+                text-align: center;
+                padding: 5px;
+            }
+            .sheet-th-number
+            {
+                width: 10%;
+            }
+            .sheet-th-lawyer
+            {
+                width: 30%;
+            }
+            .sheet-th-office
+            {
+                width: 30%
+            }
+            .sheet-th-date
+            {
+                width: 15%;
+            }
+            
+            /*Trip table classes*/
+            .trip-container
+            {
+                margin-top: 30px;
+            }
+            .trip-table
+            {
+                width: 100%;              
+                font-size: 8pt;
+                border: 1px solid rgb(103,102,102);
+                border-collapse: collapse;
+            }
+            .trip-table th
+            {
+                background-color: rgb(0,151,169);
+                color: white;
+                font-family: "sans-serif";
+                font-weight: bold;
+                text-align: center;
+                padding: 2px;
+            }
+            .trip-th-number
+            {
+                width: 5%;
+            }
+            .trip-th-date
+            {
+                width: 5%;
+            }
+            .trip-th-dossiersubject
+            {
+                width: 15%;
+            }
+            .trip-th-dossieraccount
+            {
+                width: 15%;
+            }
+            .trip-th-initend
+            {
+                width: 10%;
+            }
+            .trip-th-comments
+            {
+                width: 20%;
+            }
+            .trip-th-kms
+            {
+                width: 5%;
+            }
+            .trip-th-amount
+            {
+                width: 5%;
+            }
+            .trip-table td
+            {
+                border: 1px solid rgb(103,102,102);
+                padding: 5px;
+            }
+            .trip-table-td-center
+            {
+                text-align: center;
+            }
+            .trip-table-total-td
+            {
+                text-align: right;
+                font-weight: bold;
+                border: none !important;
+            }
+            .trip-table-td-noborder
+            {
+                border: none !important;
+                font-weight: bold;
+            }
+
+            /*Expense table classes*/
+            .expense-container
+            {
+                margin-top: 30px;
+            }
+            .expense-table
+            {
+                width: 100%;              
+                font-size: 8pt;
+                border: 1px solid rgb(103,102,102);
+                border-collapse: collapse;
+            }
+            .expense-table th
+            {
+                background-color: rgb(0,151,169);
+                color: white;
+                font-family: "sans-serif";
+                font-weight: bold;
+                text-align: center;
+                padding: 2px;
+            }
+            .expense-th-number
+            {
+                width: 5%;
+            }
+            .expense-th-date
+            {
+                width: 5%;
+            }
+            .expense-th-dossiersubject
+            {
+                width: 15%;
+            }
+            .expense-th-dossieraccount
+            {
+                width: 15%;
+            }
+            .expense-th-comments
+            {
+                width: 20%;
+            }
+            .expense-th-type
+            {
+                width: 5%;
+            }
+            .expense-th-amount
+            {
+                width: 5%;
+            }
+            .expense-table td
+            {
+                border: 1px solid rgb(103,102,102);
+                padding: 5px;
+            }
+            .expense-table-td-center
+            {
+                text-align: center;
+            }
+            .expense-table-total-td
+            {
+                text-align: right;
+                font-weight: bold;
+                border: none !important;
+            }
+            .expense-table-td-noborder
+            {
+                border: none !important;
+                font-weight: bold;
+            }
+            .total-sheet-container
+            {
+                margin-top: 50px;
+                text-align: right;
+                font-weight: bold;
+            }
+            .brand-logo
+            {
+                width: 200px;
+                height: 50px;
+            }
+            div.header 
+            {
+                padding: 10px;
+                position: running(header);
+            }
+            div.footer 
+            {
+                display: block;
+                padding: 5px;
+                position: running(footer);
+                font-family: "sans-serif";
+                font-size: 8pt;
+            }
+            .pagenumber:before
+            {
+                content: counter(page);
+            }
+            .pagecount:before
+            {
+                content: counter(pages);
+            }
+        </style>
+    </head>
+    <body>
+        <!--header-->
+        <div class="header">
+            <img src="{!BrandLogoUrl}" class="brand-logo"/>
+        </div>
+
+        <!--footer-->
+        <div class="footer">
+            <table border="0" style="width:100%">
+                <tr>
+                    <td width="50%">
+                        {!$Label.GOT_TXT_VFCreatedBy}: {!$User.FirstName} {!$User.LastName} - {!$Label.GOT_TXT_VFDate}:  
+                        <apex:outputText value="{0, date, dd/MM/yyyy HH:mm}">
+                            <apex:param value="{!NOW()}" />
+                        </apex:outputText>
+                    </td>
+                    <td width="50%" style="text-align: right;">{!$Label.GOT_TXT_VFPage} <span class="pagenumber"/>/<span class="pagecount"/></td>
+                </tr>
+            </table>
+        </div>
+
+        <!--Contenido de la página-->
+        <div class="content">
+            <center>
+                <h2>{!$Label.GOT_TXT_VFExpenseSheet}</h2>
+            </center>
+            <table class="sheet-table">
+                <thead>
+                    <tr>
+                        <th class="sheet-th-number">{!$Label.GOT_TXT_VFNumber}</th>
+                        <th class="sheet-th-lawyer">{!$Label.GOT_TXT_VFLawyer}</th>
+                        <th class="sheet-th-office">{!$Label.GOT_TXT_VFOffice}</th>
+                        <th class="sheet-th-date">{!$Label.GOT_TXT_VFStartDate}</th>
+                        <th class="sheet-th-date">{!$Label.GOT_TXT_VFEndDate}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><apex:outputText value="{!GOT_ExpenseSheet__c.Name}"></apex:outputText></td>
+                        <td><apex:outputText value="{!GOT_ExpenseSheet__c.GOT_UserRef__r.Name}"></apex:outputText></td>
+                        <td>
+                            <apex:repeat var="office" value="{!listOfOntierUserOffice}">
+                                {!office}<br/>
+                            </apex:repeat>
+                        </td>
+                        <td>
+                            <apex:outputText value="{0, date, dd/MM/yyyy}">
+                                <apex:param value="{!GOT_ExpenseSheet__c.GOT_StartDate__c}" />
+                            </apex:outputText>
+                        </td>
+                        <td>
+                            <apex:outputText value="{0, date, dd/MM/yyyy}">
+                                <apex:param value="{!GOT_ExpenseSheet__c.GOT_EndDate__c}" />
+                            </apex:outputText>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Count Trip and Expenses -->
+            <apex:variable value="{!0}" var="iNumOfTrips"/>
+            <apex:variable value="{!0}" var="iNumOfExpenses"/>
+
+            <apex:repeat var="item" value="{!GOT_ExpenseSheet__c.GOT_Expenses__r}">
+                <apex:variable var="iNumOfTrips" value="{!If(item.RecordType.DeveloperName=='GOT_Trip', iNumOfTrips+1, iNumOfTrips)}"/>
+                <apex:variable var="iNumOfExpenses" value="{!If(item.RecordType.DeveloperName=='GOT_Expense', iNumOfExpenses+1, iNumOfExpenses)}"/>
+            </apex:repeat>
+
+            <!-- Variables de totales -->
+            <apex:variable var="totalTripKms" value="{!0}"/>
+            <apex:variable var="totalTripAmount" value="{!0}"/>
+            <apex:variable var="totalCashAmount" value="{!0}"/>
+            <apex:variable var="totalCreditAmount" value="{!0}"/>
+            <apex:variable var="totalExpenseAmount" value="{!0}"/>
+
+            <apex:outputPanel rendered="{!iNumOfTrips>0}">
+                <div class="trip-container">
+                    <h4>{!$Label.GOT_TXT_VFTrip}</h4>
+                    <table class="trip-table">
+                        <thead>
+                            <tr>
+                                <th class="trip-th-number">{!$Label.GOT_TXT_VFNumber}</th>
+                                <th class="trip-th-number">{!$Label.GOT_TXT_VFDossierNumber}</th>
+                                <th class="trip-th-dossiersubject">{!$Label.GOT_TXT_VFDossierSubject}</th>
+                                <th class="trip-th-dossieraccount">{!$Label.GOT_TXT_VFCustomer}</th>
+                                <th class="trip-th-date">{!$Label.GOT_TXT_VFStartDate}</th>
+                                <th class="trip-th-date">{!$Label.GOT_TXT_VFEndDate}</th>
+                                <th class="trip-th-initend">{!$Label.GOT_TXT_VFTripInit}</th>
+                                <th class="trip-th-initend">{!$Label.GOT_TXT_VFTripEnd}</th>
+                                <th class="trip-th-comments">{!$Label.GOT_TXT_VFDescription}</th>
+                                <th class="trip-th-kms">{!$Label.GOT_TXT_VFKMs}</th>
+                                <th class="trip-th-amount">{!$Label.GOT_TXT_VFAmount} ({!GOT_ExpenseSheet__c.CurrencyIsoCode})</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            
+                            <apex:repeat var="item" value="{!GOT_ExpenseSheet__c.GOT_Expenses__r}">
+                                <apex:outputText rendered="{!item.RecordType.DeveloperName=='GOT_Trip'}">
+                                    <apex:variable var="totalTripKms" value="{!totalTripKms+item.GOT_Kms__c}"/>
+                                    <apex:variable var="totalTripAmount" value="{!totalTripAmount+item.GOT_TotalAmountAuto__c}"/>
+                                    <tr>
+                                        <td class="trip-table-td-center">{!item.Name}</td>
+                                        <td class="trip-table-td-center">{!item.GOT_DossierRef__r.Name}</td>
+                                        <td>{!item.GOT_DossierRef__r.GOT_Subject__c}</td>
+                                        <td>{!item.GOT_DossierRef__r.GOT_OrderRef__r.Account.Name}</td>
+                                        <td class="trip-table-td-center">
+                                            <apex:outputText value="{0, date, dd/MM/yyyy}">
+                                                <apex:param value="{!item.GOT_StartDate__c}" />
+                                            </apex:outputText>
+                                        </td>
+                                        <td class="trip-table-td-center">
+                                            <apex:outputText value="{0, date, dd/MM/yyyy}">
+                                                <apex:param value="{!item.GOT_EndDate__c}" />
+                                            </apex:outputText>
+                                        </td>
+                                        <td>{!item.GOT_TripInit__c}</td>
+                                        <td>{!item.GOT_TripEnd__c}</td>
+                                        <td>{!item.GOT_Comments__c}</td>
+                                        <td class="trip-table-td-center">
+                                            <apex:outputText value="{0, number, 0.00}">
+                                                <apex:param value="{!item.GOT_Kms__c}" />
+                                            </apex:outputText>
+                                        </td>
+                                        <td class="trip-table-td-center">
+                                            <apex:outputText value="{0, number, 0.00}">
+                                                <apex:param value="{!item.GOT_TotalAmountAuto__c}" />
+                                            </apex:outputText>
+                                        </td>
+                                    </tr>                            
+                                </apex:outputText>
+                            </apex:repeat>
+                            <!--Fila final con totales -->
+                            <tr>
+                                <td colspan="9" class="trip-table-total-td">{!$Label.GOT_TXT_VFTotal}:</td>
+                                <td class="trip-table-td-center trip-table-td-noborder">
+                                    <apex:outputText value="{0, number, 0.00}">
+                                        <apex:param value="{!totalTripKms}" />
+                                    </apex:outputText>
+                                </td>
+                                <td class="trip-table-td-center trip-table-td-noborder">
+                                    <apex:outputText value="{0, number, 0.00}">
+                                        <apex:param value="{!totalTripAmount}" />
+                                    </apex:outputText>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </apex:outputPanel>
+
+            <apex:outputPanel rendered="{!iNumOfExpenses>0}">
+                <div class="expense-container">
+                    <h4>{!$Label.GOT_TXT_VFExpenses}</h4>
+                    <table class="expense-table">
+                        <thead>
+                            <tr>
+                                <th class="expense-th-number">{!$Label.GOT_TXT_VFNumber}</th>
+                                <th class="expense-th-number">{!$Label.GOT_TXT_VFDossierNumber}</th>
+                                <th class="expense-th-dossiersubject">{!$Label.GOT_TXT_VFDossierSubject}</th>
+                                <th class="expense-th-dossieraccount">{!$Label.GOT_TXT_VFCustomer}</th>
+                                <th class="expense-th-date">{!$Label.GOT_TXT_VFStartDate}</th>
+                                <th class="expense-th-date">{!$Label.GOT_TXT_VFEndDate}</th>
+                                <th class="expense-th-type">{!$Label.GOT_TXT_VFType}</th>
+                                <th class="expense-th-type">{!$Label.GOT_TXT_VFSubtype}</th>
+                                <th class="expense-th-comments">{!$Label.GOT_TXT_VFDescription}</th>
+                                <th class="expense-th-amount">{!$Label.GOT_TXT_VFCash} ({!GOT_ExpenseSheet__c.CurrencyIsoCode})</th>
+                                <th class="expense-th-amount">{!$Label.GOT_TXT_VFCredit} ({!GOT_ExpenseSheet__c.CurrencyIsoCode})</th>
+                                <th class="expense-th-amount">{!$Label.GOT_TXT_VFTotal} ({!GOT_ExpenseSheet__c.CurrencyIsoCode})</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <apex:repeat var="item" value="{!GOT_ExpenseSheet__c.GOT_Expenses__r}">
+                                <apex:outputText rendered="{!item.RecordType.DeveloperName=='GOT_Expense'}">
+                                    <apex:variable var="totalCashAmount" value="{!totalCashAmount+item.GOT_CashAmount__c}"/>
+                                    <apex:variable var="totalCreditAmount" value="{!totalCreditAmount+item.GOT_CreditAmount__c}"/>
+                                    <apex:variable var="totalExpenseAmount" value="{!totalExpenseAmount+item.GOT_TotalAmountAuto__c}"/>
+                                    <tr>
+                                        <td class="expense-table-td-center">{!item.Name}</td>
+                                        <td class="expense-table-td-center">{!item.GOT_DossierRef__r.Name}</td>
+                                        <td>{!item.GOT_DossierRef__r.GOT_Subject__c}</td>
+                                        <td>{!item.GOT_DossierRef__r.GOT_OrderRef__r.Account.Name}</td>
+                                        <td class="expense-table-td-center">
+                                            <apex:outputText value="{0, date, dd/MM/yyyy}">
+                                                <apex:param value="{!item.GOT_StartDate__c}" />
+                                            </apex:outputText>
+                                        </td>
+                                        <td class="expense-table-td-center">
+                                            <apex:outputText value="{0, date, dd/MM/yyyy}">
+                                                <apex:param value="{!item.GOT_EndDate__c}" />
+                                            </apex:outputText>
+                                        </td>
+                                        <td><apex:outputfield value="{!item.GOT_TypePick__c}"/></td>
+                                        <td><apex:outputfield value="{!item.GOT_SubTypePick__c}"/></td>
+                                        <td>{!item.GOT_Comments__c}</td>
+                                        <td class="expense-table-td-center">
+                                            <apex:outputText value="{0, number, 0.00}">
+                                                <apex:param value="{!item.GOT_CashAmount__c}" />
+                                            </apex:outputText>
+                                        </td>
+                                        <td class="expense-table-td-center">
+                                            <apex:outputText value="{0, number, 0.00}">
+                                                <apex:param value="{!item.GOT_CreditAmount__c}" />
+                                            </apex:outputText>
+                                        </td>
+                                        <td class="expense-table-td-center">
+                                            <apex:outputText value="{0, number, 0.00}">
+                                                <apex:param value="{!item.GOT_TotalAmountAuto__c}" />
+                                            </apex:outputText>
+                                        </td>
+                                    </tr>                            
+                                </apex:outputText>
+                            </apex:repeat>
+                            <!--Fila final con totales -->
+                            <tr>
+                                <td colspan="9" class="expense-table-total-td">{!$Label.GOT_TXT_VFTotal}:</td>
+                                <td class="expense-table-td-center expense-table-td-noborder">
+                                    <apex:outputText value="{0, number, 0.00}">
+                                        <apex:param value="{!totalCashAmount}" />
+                                    </apex:outputText>
+                                </td>
+                                <td class="expense-table-td-center expense-table-td-noborder">
+                                    <apex:outputText value="{0, number, 0.00}">
+                                        <apex:param value="{!totalCreditAmount}" />
+                                    </apex:outputText>
+                                </td>
+                                <td class="expense-table-td-center expense-table-td-noborder">
+                                    <apex:outputText value="{0, number, 0.00}">
+                                        <apex:param value="{!totalExpenseAmount}" />
+                                    </apex:outputText>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </apex:outputPanel>
+            <apex:outputPanel >
+                <div class="total-sheet-container">
+                    {!$Label.GOT_TXT_VFTotalExpenseSheet}: 
+                    <apex:outputText value="{0, number, 0.00}">
+                        <apex:param value="{!totalExpenseAmount+totalTripAmount}" />
+                    </apex:outputText>
+                    {!GOT_ExpenseSheet__c.CurrencyIsoCode}
+                </div>
+            </apex:outputPanel>
+        </div>
+    </body>
+</apex:page>

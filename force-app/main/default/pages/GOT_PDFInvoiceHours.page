@@ -1,0 +1,105 @@
+<apex:page renderAs="pdf" standardController="GOT_Invoice__c" extensions="GOT_InvoicePDFVFController"  applyBodyTag="false">
+ <head>
+        
+   <style> 
+            body 
+            {
+                font-family: "sans-serif";
+                font-size: 10pt;
+            }
+
+        
+            
+            table {
+                align:center;
+                text-align:center;
+                width:100%;
+                padding:20px;
+                border:1px solid black;
+            }
+            
+            td{
+
+                padding:20px;
+            }
+            
+    </style>
+    </head>
+    <body>
+
+        <div>
+            <h4><apex:outputText value="{!if($CurrentPage.parameters.language=='en-US','Invoice details',if($CurrentPage.parameters.language=='it','Dettagli della fattura','Detalles de la factura'))}"/></h4>
+        </div><br/>
+       <table>
+           <tr >
+               <th> <apex:outputText value="{!if($CurrentPage.parameters.language=='en-US','Name',if($CurrentPage.parameters.language=='it','Nomed','Nombre'))}"/></th>
+               <th><apex:outputText value="{!if($CurrentPage.parameters.language=='en-US','Category',if($CurrentPage.parameters.language=='it','Categoria','Categoria'))}"/></th>
+               <th><apex:outputText value="{!if($CurrentPage.parameters.language=='en-US','Date',if($CurrentPage.parameters.language=='it','Data','Fecha'))}"/></th>
+               <th><apex:outputText value="{!if($CurrentPage.parameters.language=='en-US','Hours',if($CurrentPage.parameters.language=='it','Ore','Horas'))}"/></th>
+               <th><apex:outputText value="{!if($CurrentPage.parameters.language=='en-US','Rate',if($CurrentPage.parameters.language=='it','Tariffa','Tarifa'))}"/></th>
+               <th><apex:outputText value="{!if($CurrentPage.parameters.language=='en-US','Amount',if($CurrentPage.parameters.language=='it','Importo','Importe'))}"/></th>
+               <th><apex:outputText value="{!if($CurrentPage.parameters.language=='en-US','Description',if($CurrentPage.parameters.language=='it','Descrizione','Descripcion'))}"/></th>
+            </tr>
+
+            <tr>
+                <td>
+                    <apex:repeat   var="reports" value="{!timeReports}">
+                        <apex:outputText value="{!If(contains($CurrentPage.parameters.cols,'GOT_Name'), reports.GOT_UserRef__r.Name,If(contains($CurrentPage.parameters.cols,'GOT_Todos'),reports.GOT_UserRef__r.Name,''))}"/><br/>
+                    </apex:repeat>
+                   
+                </td>
+             
+                <td>
+                    <apex:repeat var="reports" value="{!timeReports}">
+                        <apex:outputText value="{!If(contains($CurrentPage.parameters.cols,'GOT_Categoria'), reports.GOT_UserRef__r.GOT_OntierProfilePick__c,If(contains($CurrentPage.parameters.cols,'GOT_Todos'),reports.GOT_UserRef__r.GOT_OntierProfilePick__c,''))}"/><br/>
+                     </apex:repeat>
+                </td>
+                <td>
+                    <apex:repeat var="reports" value="{!timeReports}">
+                        <apex:outputText value="{0, date, dd/MM/yyyy}">
+                            <apex:param  value="{!If(contains($CurrentPage.parameters.cols,'GOT_Fecha'), reports.GOT_Date__c,If(contains($CurrentPage.parameters.cols,'GOT_Todos'),reports.GOT_Date__c,''))}" />
+                         </apex:outputText><br/>
+                     </apex:repeat>
+                </td>
+
+                <td>
+                    <apex:repeat var="reports" value="{!timeReports}">
+                        <apex:outputText value="{!If(contains($CurrentPage.parameters.cols,'GOT_Horas'), reports.GOT_MinutesToHoursAuto__c,If(contains($CurrentPage.parameters.cols,'GOT_Todos'),reports.GOT_MinutesToHoursAuto__c,''))}"/><br/>
+                    </apex:repeat>
+                </td>
+
+                <td>
+                    <apex:repeat var="relation" value="{!invoiceRelation}">
+                        <apex:outputText value="{!If(contains($CurrentPage.parameters.cols,'GOT_Tarifa'), relation.GOT_Rate__c,If(contains($CurrentPage.parameters.cols,'GOT_Todos'),relation.GOT_Rate__c,''))}"/><br/>
+                    </apex:repeat>
+                </td>
+
+                <td>
+                    
+                    <apex:repeat var="relation" value="{!invoiceRelation}">
+                        <apex:outputText value="{!If(contains($CurrentPage.parameters.cols,'GOT_Importe'), relation.GOT_Amount__c,If(contains($CurrentPage.parameters.cols,'GOT_Todos'),relation.GOT_Amount__c,''))}"/><br/>
+                    </apex:repeat>
+                </td>
+
+                <td>
+                    <apex:repeat var="relation" value="{!invoiceRelation}">
+                        <apex:outputText value="{!If(contains($CurrentPage.parameters.cols,'GOT_Descripcion'), relation.GOT_Comments__c,If(contains($CurrentPage.parameters.cols,'GOT_Todos'),relation.GOT_Comments__c,''))}"/><br/>
+                    </apex:repeat>
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    <apex:outputText value="{!if($CurrentPage.parameters.language=='en-US','Total',if($CurrentPage.parameters.language=='it','Totale','Total'))}"/>
+                </td>
+                <td></td>
+                <td></td>
+                <td><apex:outputText value=" {!If(contains($CurrentPage.parameters.cols,'GOT_Horas'),sumaTotal,If(contains($CurrentPage.parameters.cols,'GOT_Todos'),sumaTotal,''))}"> </apex:outputText></td>
+                <td></td>
+                <td> <apex:outputText value="{!If(contains($CurrentPage.parameters.cols,'GOT_Importe'),GOT_Invoice__c.GOT_TRAmountAuto__c,If(contains($CurrentPage.parameters.cols,'GOT_Todos'),GOT_Invoice__c.GOT_TRAmountAuto__c,''))}"> </apex:outputText></td>
+            </tr>
+
+       </table>
+       
+    </body>
+</apex:page>
